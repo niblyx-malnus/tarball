@@ -103,16 +103,16 @@
   ++  octs-cat
     |=  [a=octs b=octs]
     ^-  octs
-    =/  z=@  (sub p.b (met 3 q.b)) :: leading zeros for b
+    :: assumes valid octs with (lte (met 3 q.octs) p.octs)
+    =/  z=@  (sub p.a (met 3 q.a)) :: leading zeros for a
     :-  (add p.a p.b)
-    (cat 3 q.b (lsh [3 z] q.a))
+    (cat 3 q.a (lsh [3 z] q.b))
   :: raps left to right
   ::
   ++  octs-rap
     |=  =(list octs)
     ^-  octs
-    ?:  ?=(?(~ [octs ~]) list)
-      !!
+    ?<  ?=(?(~ [octs ~]) list)
     ?:  ?=([octs octs ~] list)
       (octs-cat i.list i.t.list)
     %+  octs-cat  i.list
@@ -131,26 +131,21 @@
   ++  numb    (curr sud-base 10)
   ++  ud-oct  (curr sud-base 8)
   ::
-  ++  pack  |=([f=@t l=@] `octs`l^(lsh [3 (sub l (met 3 f))] (swp 3 f)))
+  ++  pack  |=([f=@t l=@] `octs`?>((lte (met 3 f) l) l^f))
   ::
   ++  encode-header
+    =|  checksum=(unit @t)
     |=  header=tarball-header
     ^-  octs
     =.  header  (validate-header header)
-    =;  data=@
-      :: front-pad with zeros if < 512
-      ?>  (lte (met 3 data) 512)
-      [512 data]
-    =/  data=@
-      =;  fields
-        q:(octs-rap (turn fields pack))
+    =/  fields
       :~  [name.header 100]
           [(crip mode.header) 8]
           [(crip uid.header) 8]
           [(crip gid.header) 8]
           [(crip size.header) 12]
           [(crip mtime.header) 12]
-          ['        ' 8] :: checksum placeholder
+          [?^(checksum u.checksum '        ') 8]
           [typeflag.header 1]
           [linkname.header 100]
           ['ustar' 6]    :: hardcoded ustar field
@@ -162,40 +157,12 @@
           [prefix.header 155]
           ['' 12] :: padding
       ==
-    :: calculate and insert the correct checksum
-    ::
-    =/  checksum  (ud-oct (sum data))
-    =/  beg=@  (rsh [3 (sub 512 148)] data) :: grab beginning
-    =/  end=@  (end [3 (sub 512 156)] data) :: grab end
-    =.  data  (cat 3 (swp 3 checksum) beg)  :: add checksum after beginning
-    =.  data  (lsh [3 (sub 8 (met 3 checksum))] data) :: pad to 8 bytes
-    (cat 3 end data) :: add end after beginning and padded checksum
+    =/  data=octs  (octs-rap (turn fields pack))
+    ?>  =(512 p.data)
+    ?^  checksum
+      data
+    $(checksum `(ud-oct (sum q.data)))
   --
-:: REMEMBER: Urbit refuses to pad with leading zeros
-::
-:: sub-decimal base
-::
-++  sud-base
-  |=  [a=@u b=@u]
-  ?>  &((gth b 0) (lte b 10))
-  ?:  =(0 a)  '0'
-  %-  crip
-  %-  flop
-  |-  ^-  tape
-  ?:(=(0 a) ~ [(add '0' (mod a b)) $(a (div a b))])
-::
-++  numb   (curr sud-base 10)
-++  octal  (curr sud-base 8)
-::
-++  pack
-  |=  =(list [@t @])
-  ^-  @
-  %+  roll  list
-  |=  [[fel=@t len=@] acc=@]
-  =.  acc  (cat 3 (swp 3 fel) acc)
-  (lsh [3 (sub len (met 3 fel))] acc)
-::
-++  sum  |=(@ (roll (rip 3 +<) add))
 :: Create a tar header for a file or directory.
 ::   $name: Name of the file or directory.
 ::   $size: Size of the file. Should be 0 for directories.
@@ -203,8 +170,7 @@
 ::
 ++  create-tar-header
   |=  [name=@t size=@ is-dir=?]
-  ^-  @
-  =-  q.-
+  ^-  octs
   %-  encode-header:tarb
   ;;  tarball-header:tarb
   :*  name
@@ -222,74 +188,16 @@
       prefix=''
   ==
 ::
-++  create-tar-header-original
-  |=  [name=@t size=@ is-dir=?]
-  ^-  @
-  :: Tar header fields
-  ::
-  =/  mode=@t      ?:(is-dir '0755' '0644')
-  =/  uid=@t       '0000000'
-  =/  gid=@t       '0000000'
-  =/  mtime=@t     (octal (unt:chrono:userlib ~2000.1.1))
-  =/  checksum=@t  '        ' :: checksum placeholder
-  =/  typeflag=@t  ?:(is-dir '5' '0')
-  =/  linkname=@t  ''
-  =/  ustar=@t     ''
-  =/  version=@t   ''
-  =/  uname=@t     'root'
-  =/  gname=@t     'root'
-  =/  devmajor=@t  ''
-  =/  devminor=@t  ''
-  =/  prefix=@t    ''
-  =/  header
-    %-  pack
-    :~  [name 100]
-        [mode 8]
-        [uid 8]
-        [gid 8]
-        [(octal size) 12]
-        [mtime 12]
-        [checksum 8]
-        [typeflag 1]
-        [linkname 100]
-        [ustar 6]
-        [version 2]
-        [uname 32]
-        [gname 32]
-        [devmajor 8]
-        [devminor 8]
-        [prefix 155]
-        ['' 12] :: padding
-    ==
-  :: calculate and insert the correct checksum
-  ::
-  =.  checksum  (octal (sum header))
-  =/  beg=@  (rsh [3 (sub 512 148)] header) :: grab beginning
-  =/  end=@  (end [3 (sub 512 156)] header) :: grab end
-  =.  header  (cat 3 (swp 3 checksum) beg)  :: add checksum after beginning
-  =.  header  (lsh [3 (sub 8 (met 3 checksum))] header) :: pad to 8 bytes
-  (cat 3 end header) :: add end after beginning and padded checksum
-::
 ++  create-tarball
   ^-  octs
-  =;  tar=@
-    [(met 3 tar) (swp 3 tar)]
   =/  dir-name=@t      'example_dir/'
   =/  file-name=@t     (cat 3 dir-name 'hello.txt')
   =/  file-content=@t  'Hello, world!'
   =/  file-size=@      (met 3 file-content)
-  ^-  @
-  =/  tarball=@  (create-tar-header dir-name 0 &)
-  =.  tarball    (cat 3 (create-tar-header file-name file-size |) tarball)
-  :: TODO: Be careful here that leading zeros don't get erased
-  ::
-  =.  tarball    (cat 3 (swp 3 file-content) tarball)
-  :: Pad the end of file contents to 512 bytes
-  ::
-  =.  tarball    (lsh [3 (sub 512 (mod file-size 512))] tarball)
-  :: two null blocks signify end of archive
-  ::
-  (lsh [3 1.024] tarball)
+  =/  tarball=octs  (create-tar-header dir-name 0 &)
+  =.  tarball       (octs-cat:tarb tarball (create-tar-header file-name file-size |))
+  =.  tarball       (octs-cat:tarb tarball (add file-size (sub 512 (mod file-size 512)))^file-content)
+  tarball(p (add 1.024 p.tarball))
 --
 ::
 =|  state-0
