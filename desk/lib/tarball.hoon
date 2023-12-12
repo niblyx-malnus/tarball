@@ -54,19 +54,19 @@
 ::    or directory that immediately follows this header in the archive.
 ::
 +$  tarball-header
-  $:  name=@t
-      mode=@t     :: octal
-      uid=@t      :: octal
-      gid=@t      :: octal
-      size=@t     :: octal
-      mtime=@t    :: octal
-      typeflag=@t
-      linkname=@t
-      uname=@t
-      gname=@t
-      devmajor=@t :: octal
-      devminor=@t :: octal
-      prefix=@t
+  $:  name=@t     :: file or directory name
+      mode=@t     :: octal - permissions as octal (e.g. 0755)
+      uid=@t      :: octal - user id
+      gid=@t      :: octal - group id
+      size=@t     :: octal - size of file or directory
+      mtime=@t    :: octal - time at which last modified
+      typeflag=@t :: type of file, directory, etc.
+      linkname=@t :: linkname for symlink and hardlink
+      uname=@t    :: user name
+      gname=@t    :: group name
+      devmajor=@t :: octal - for devices
+      devminor=@t :: octal - for devices
+      prefix=@t   :: name prefix; allows for longer names
   ==
 ::
 +$  tarball-entry  [header=tarball-header data=(unit octs)]
