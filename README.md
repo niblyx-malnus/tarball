@@ -2,7 +2,7 @@
 
 Download Urbit cages in a file-system hierarchy as a tarball.
 
-To download the example tarball when you have the desk running go to `[your-url]/tarball` e.g. `localhost:8080/tarball`
+To download the example tarball when you have the desk running go to `[your-url]/tarball` e.g. `localhost:8080/tarball` in your browser.
 
 ## Installation
 1. Clone this repo.
