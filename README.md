@@ -21,6 +21,9 @@ To download the example tarball when you have the desk running go to `[your-url]
 Basically everything important is in `/app/tarball.hoon` and `/lib/tarball.hoon`. Use the `$ball` type to organize cages into a directory structure, then use `+make-tarball` to convert it to a tarball...
 
 ```
+/lib/tarball.hoon
+
+...
 +$  metadata  (map @t @t)
 +$  content
   $%  [%file =metadata =cage]
@@ -28,11 +31,34 @@ Basically everything important is in `/app/tarball.hoon` and `/lib/tarball.hoon`
   ==
 +$  lump  [=metadata contents=(map @ta content)]
 +$  ball  (axal lump)
+...
 ```
 
 I don't really expect these metadata parts to ever be used, but in principle you can add metadata to files and directories that tar parsers will recognize...
 
 ```
+/app/tarball.hoon
+
+...
+++  example-ball
+  ^-  ball:tarb
+  =|  =ball:tarb
+  ::
+  =.  ball
+    %+  ~(put-file bl:tarb ball)
+      /'example_dir'/hello
+    [~ txt+!>(~['Hello, world!'])]
+  ::
+  %+  ~(put-symlink bl:tarb ball)
+    /'symlink_dir'/'hello.txt'
+  [~ '../example_dir/hello.txt']
+...
+```
+
+```
+/lib/tarball.hoon
+
+...
 +$  tarball-header
   $:  name=@t
       mode=@t
@@ -51,4 +77,5 @@ I don't really expect these metadata parts to ever be used, but in principle you
 ::
 +$  tarball-entry  [header=tarball-header data=(unit octs)]
 +$  tarball        (list tarball-entry)
+...
 ```
