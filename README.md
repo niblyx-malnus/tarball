@@ -8,6 +8,18 @@ To download the example tarball when you have the desk running go to `[your-url]
 
 Basically everything important is in `/app/tarball.hoon` and `/lib/tarball.hoon`. Use the `$ball` type to organize cages into a directory structure, then use `+make-tarball` to convert it to a tarball...
 
+```
++$  metadata  (map @t @t)
++$  content
+  $%  [%file =metadata =cage]
+      [%symlink =metadata link=@t]
+  ==
++$  lump  [=metadata contents=(map @ta content)]
++$  ball  (axal lump)
+```
+
+I don't really expect these metadata parts to ever be used, but in principle you can add metadata to files and directories that tar parsers will recognize...
+
 ## Installation
 1. Clone this repo.
 2. Boot up a ship (fakezod or moon or whatever you use).
