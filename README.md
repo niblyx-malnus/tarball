@@ -4,6 +4,8 @@ Download Urbit cages in a file-system hierarchy as a tarball.
 
 To download the example tarball when you have the desk running go to `[your-url]/tarball` e.g. `localhost:8080/tarball` in your browser.
 
+(this desk also uses `/lib/bind.hoon` to get rid of %eyre binding boilerplate)
+
 ## Installation
 1. Clone this repo.
 2. Boot up a ship (fakezod or moon or whatever you use).
