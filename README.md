@@ -6,6 +6,8 @@ To download the example tarball when you have the desk running go to `[your-url]
 
 (this desk also uses `/lib/bind.hoon` to get rid of %eyre binding boilerplate)
 
+Basically everything important is in `/lib/tarball.hoon`. Use the `$ball` type to organize cages into a file-system, then use `+make-tarball` to convert it to a tarball...
+
 ## Installation
 1. Clone this repo.
 2. Boot up a ship (fakezod or moon or whatever you use).
