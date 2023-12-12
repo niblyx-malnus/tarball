@@ -1,12 +1,12 @@
 # tarball
 
-Download Urbit cages in a file-system hierarchy as a tarball.
+Download Urbit cages in a directory hierarchy as a tarball.
 
 To download the example tarball when you have the desk running go to `[your-url]/tarball` e.g. `localhost:8080/tarball` in your browser.
 
 (this desk also uses `/lib/bind.hoon` to get rid of %eyre binding boilerplate)
 
-Basically everything important is in `/lib/tarball.hoon`. Use the `$ball` type to organize cages into a file-system, then use `+make-tarball` to convert it to a tarball...
+Basically everything important is in `/lib/tarball.hoon`. Use the `$ball` type to organize cages into a directory structure, then use `+make-tarball` to convert it to a tarball...
 
 ## Installation
 1. Clone this repo.
