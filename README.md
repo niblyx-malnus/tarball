@@ -20,6 +20,27 @@ Basically everything important is in `/app/tarball.hoon` and `/lib/tarball.hoon`
 
 I don't really expect these metadata parts to ever be used, but in principle you can add metadata to files and directories that tar parsers will recognize...
 
+```
++$  tarball-header
+  $:  name=@t
+      mode=@t
+      uid=@t
+      gid=@t
+      size=@t
+      mtime=@t
+      typeflag=@t
+      linkname=@t
+      uname=@t
+      gname=@t
+      devmajor=@t
+      devminor=@t
+      prefix=@t
+  ==
+::
++$  tarball-entry  [header=tarball-header data=(unit octs)]
++$  tarball        (list tarball-entry)
+```
+
 ## Installation
 1. Clone this repo.
 2. Boot up a ship (fakezod or moon or whatever you use).
